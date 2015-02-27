@@ -15,6 +15,7 @@
 import json
 from cobra.mit.meta import ClassLoader
 from cobra.internal.codec import parseMoClassName, getParentDn
+from cobra.mit.naming import Dn
 
 
 def parseJSONError(rspText, errorClass, httpCode=None):
@@ -57,8 +58,11 @@ def _createMo(moClassName, moData, parentMo):
     fqClassName = "cobra.model." + pkgName + "." + className
     pyClass = ClassLoader.loadClass(fqClassName)
     parentDnStr = None
+    dnStr = None
     moProps = moData['attributes']
+
     if 'dn' in moProps:
+        dnStr = moProps['dn']
         parentDnStr = getParentDn(moProps['dn'])
         del moProps['dn']
     if 'rn' in moProps:
@@ -69,10 +73,21 @@ def _createMo(moClassName, moData, parentMo):
         del moProps['status']
 
     namingVals = []
+
     for propMeta in pyClass.meta.namingProps:
         propName = propMeta.moPropName
-        namingVals.append(moProps[propName])
-        del moProps[propName]
+        if propName in moProps:
+            namingVals.append(moProps[propName])
+            del moProps[propName]
+
+    if not namingVals and pyClass.meta.namingProps:
+        dn = Dn.fromString(dnStr)
+        rn = list(dn.rns).pop()
+        namingVals = list(rn.namingVals)
+        for propMeta in pyClass.meta.namingProps:
+            propName = propMeta.moPropName
+            if propName in moProps: del moProps[propName]
+
 
     parentMoOrDn = parentMo if parentMo else parentDnStr
     mo = pyClass(parentMoOrDn, *namingVals, markDirty=False, **moProps)

@@ -40,6 +40,28 @@ class MoDirectory(object):
         """Ends a session to an APIC."""
         self._accessImpl.logout()
 
+    @property
+    def secure(self):
+        """Returns the secure property (bool) for the session
+        associated with this Directory
+        """
+        return self._accessImpl._session.secure
+
+    @property
+    def url(self):
+        """Returns the url property (string) for the session associated
+        with this Directory
+        """
+        return self._accessImpl._session.url
+
+    @property
+    def cookie(self):
+        """Returns cookie property (string) for the session associated
+        with this Directory
+        """
+        return self._accessImpl._session.cookie
+
+
     def reauth(self):
         """Re-authenticate the session with the current authentication cookie.
 

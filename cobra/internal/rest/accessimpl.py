@@ -198,3 +198,6 @@ class RestAccess(object):
             return fromXMLStr(rsp.text)
         return fromJSONStr(rsp.text)
 
+    @classmethod
+    def requests_codes(self):
+        return requests.codes

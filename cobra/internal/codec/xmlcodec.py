@@ -16,7 +16,7 @@ import xml.etree.cElementTree as ET
 import xml.dom.minidom
 from cobra.mit.meta import ClassLoader
 from cobra.internal.codec import parseMoClassName, getParentDn
-
+from cobra.mit.naming import Dn
 
 def parseXMLError(rspStr, errorClass, httpCode=None):
     errorNode = ET.fromstring(rspStr).find('error')
@@ -52,6 +52,7 @@ def _createMo(node, parentMo):
     fqClassName = "cobra.model." + pkgName + "." + className
     pyClass = ClassLoader.loadClass(fqClassName)
     parentDnStr = None
+    dnStr = None
     moProps = {}
     for attr, val in node.attrib.items():
         if (attr != 'dn' and attr != 'rn' and attr != 'instanceId' and
@@ -59,13 +60,25 @@ def _createMo(node, parentMo):
             moProps[attr] = str(val)
         elif attr == 'dn':
             # Set the dn of this MO from the data returned by server
+            dnStr = str(val)
             parentDnStr = getParentDn(str(val))
 
     namingVals = []
+
     for propMeta in pyClass.meta.namingProps:
-        propName = propMeta.moPropName
-        namingVals.append(moProps[propName])
-        del moProps[propName]
+        propName = propMeta.moPropName        
+        if propName in moProps:
+            namingVals.append(moProps[propName])
+            del moProps[propName]
+
+    if not namingVals and pyClass.meta.namingProps:
+        dn = Dn.fromString(dnStr)
+        rn = list(dn.rns).pop()
+        namingVals = list(rn.namingVals)
+        for propMeta in pyClass.meta.namingProps:
+            propName = propMeta.moPropName
+            if propName in moProps: del moProps[propName]
+
 
     parentMoOrDn = parentMo if parentMo else parentDnStr
     mo = pyClass(parentMoOrDn, *namingVals, markDirty=False, **moProps)

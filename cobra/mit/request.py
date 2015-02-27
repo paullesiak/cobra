@@ -282,6 +282,17 @@ class AbstractQuery(AbstractRequest):
                              (value, str(allowedValues)))
         self.__options['replica'] = value
 
+    @property
+    def subscription(self):
+        return self.__options.get('subscription', None)
+
+    @subscription.setter
+    def subscription(self, value):
+        if value not in {'yes', 'no'}:
+            raise ValueError('value should be one of: %s' % {'yes', 'no'})
+        self.__options['subscription'] = value
+
+
 
 class DnQuery(AbstractQuery):
     """Query based on distinguished name (Dn).

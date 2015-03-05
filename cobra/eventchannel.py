@@ -6,7 +6,7 @@ import websocket
 import ssl
 import xml.etree.cElementTree as ET
 import json
-from cobra.mit.request import AbstractQuery, AbstractRequest
+from cobra.mit.request import AbstractQuery, AbstractRequest, RestError
 from cobra.mit.session import AbstractSession
 from cobra.mit.naming import Dn
 
@@ -126,9 +126,10 @@ class EventChannel(object):
         """Subscribes the event channel to a particular class query or dn query
 
         Args:
-          dnOrClassQuery (cobra.mit.request.ClassQuery or 
-            cobra.mit.request.DnQuery): Mo Query object which will be
-            subscribed
+          dnOrClassQuery (cobra.mit.request.ClassQuery): Class Query
+            object which will be subscribed
+          dnOrClassQuery (cobra.mit.request.DnQuery): Dn Query object
+            which will be subscribed
 
         Returns:
           cobra.eventchannel.Subscription: Object representing the subscription
@@ -154,18 +155,19 @@ class EventChannel(object):
           subscriptionId (int): Subscription ID that will be refreshed
 
         Raises:
-          Exception: If the subscription refresh returns a non-200 response code
+          RestError: If the subscription refresh returns a
+            non-successful code
         """
         refreshRequest = RefreshSubRequest(subscriptionId)
         rsp = self._moDir._accessImpl._get(refreshRequest)
         if rsp.status_code != RestAccess.requests_codes().ok:
-            raise Exception('Error refreshing subscription: ' + str(rsp))
+            raise RestError(None, 'Error refreshing subscription', rsp.status_code)
 
     def getEvents(self):
         """Get events from the event channel
 
         Returns:
-          list: List of AbstractEvent-based objects containing changes that have
+          list: List of cobra.eventchannel.AbstractEvent-based objects containing changes that have
             been read off the event Channel
         """
         eventStr = self._websocket.recv()
@@ -232,9 +234,9 @@ class MoEvent(AbstractEvent):
             representing the subscription that generated this MoEvent
 
         Returns:
-          MoCreate: For new MO objects being created
-          MoModify: For MOs being modified
-          MoDelete: For Mos being deleted
+          cobra.eventchannel.MoCreate: For new MO objects being created
+          cobra.eventchannel.MoModify: For MOs being modified
+          cobra.eventchannel.MoDelete: For Mos being deleted
 
         """
 
@@ -257,7 +259,7 @@ class MoEvent(AbstractEvent):
 
     @classmethod
     def parseMoEventStr(cls, eventChannel, eventStr):
-        """Returns a list of MoEvent objects representing the changes
+        """Returns a list of cobra.eventchannel.MoEvent objects representing the changes
         received within an event channel update
 
         Args:
@@ -268,7 +270,7 @@ class MoEvent(AbstractEvent):
             event stream
 
         Returns:
-          list: List of MoEvent objects
+          list: List of cobra.eventchannel.MoEvent objects
 
         """
 

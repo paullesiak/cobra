@@ -16,4 +16,5 @@ The available packages are as follows:
     access
     mo
     meta
+    eventchannel
 

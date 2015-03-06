@@ -40,7 +40,7 @@ class RefreshSubRequest(AbstractQuery):
         Args:
           subid (string): The ID for the subscription to be refreshed
         """
-
+        super(RefreshSubRequest, self).__init__()
         self.__options = {}
         self.subid = subid
         self.uriBase = "/api/subscriptionRefresh"
@@ -170,8 +170,8 @@ class EventChannel(object):
         if rsp.status_code != RestAccess.requests_codes().ok:
             raise RestError(None, 'Error refreshing subscription', rsp.status_code)
 
-    def getEvents(self):
-        """Get events from the event channel
+    def decipherEvents(self):
+        """Decipher events that have arrived on the event channel
 
         Returns:
           list: List of cobra.eventchannel.AbstractEvent-based objects containing changes that have
@@ -225,6 +225,7 @@ class MoEvent(AbstractEvent):
     """
 
     def __init__(self):
+        super(MoEvent, self).__init__()
         self._moClassName = None
         self._subscription = None
         self._dnStr = None
@@ -257,12 +258,13 @@ class MoEvent(AbstractEvent):
             status = moChanges['status']
             del moChanges['status']
 
-        if status == 'created':
-            return MoCreate(dnStr, moClassName, moChanges, subId)
-        elif status == 'modified':
-            return MoModify(dnStr, moClassName, moChanges, subId)
-        if status == 'deleted':
-            return MoDelete(dnStr, moClassName, subId)
+        typeMap = {
+            'created': MoCreate(dnStr, moClassName, moChanges, subId),
+            'modified': MoModify(dnStr, moClassName, moChanges, subId),
+            'deleted': MoDelete(dnStr, moClassName, subId),
+        }
+
+        return typeMap[status]
 
     @classmethod
     def parseMoEventStr(cls, eventChannel, eventStr):
@@ -340,6 +342,7 @@ class MoEvent(AbstractEvent):
 class MoDelete(MoEvent):
 
     def __init__(self, dnStr, moClassName, subscription):
+        super(MoDelete, self).__init__()
         self._dnStr = dnStr
         self._moClassName = moClassName
         self._subscription = subscription
@@ -348,6 +351,7 @@ class MoDelete(MoEvent):
 class MoCreate(MoEvent):
 
     def __init__(self, dnStr, moClassName, changes, subscription):
+        super(MoCreate, self).__init__()
         self._dnStr = dnStr
         self._moClassName = moClassName
         self._changes = changes
@@ -361,6 +365,7 @@ class MoCreate(MoEvent):
 class MoModify(MoEvent):
 
     def __init__(self, dnStr, moClassName, changes, subscription):
+        super(MoModify, self).__init__()
         self._dnStr = dnStr
         self._moClassName = moClassName
         self._changes = changes

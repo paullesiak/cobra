@@ -288,7 +288,9 @@ class AbstractQuery(AbstractRequest):
 
     @subscription.setter
     def subscription(self, value):
-        if value not in {'yes', 'no'}:
+        if type(value) == bool:
+            self.__options['subscription'] = 'yes' if value else 'no'
+        elif value not in {'yes', 'no'}:
             raise ValueError('value should be one of: %s' % {'yes', 'no'})
         self.__options['subscription'] = value
 

@@ -157,7 +157,7 @@ class Test_eventchannel:
 
         found = False
 
-        events = ec.getEvents()
+        events = ec.decipherEvents()
 
         for moevent in events:
             logging.info('Event:      : {}'.format(moevent.moEventType))

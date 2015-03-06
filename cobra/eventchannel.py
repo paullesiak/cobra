@@ -21,10 +21,7 @@ from cobra.mit.session import AbstractSession
 from cobra.mit.naming import Dn
 
 from cobra.internal.codec import parseMoClassName
-# from cobra.internal.codec.jsoncodec import fromJSONStr, fromJSONDict
-# from cobra.internal.codec.xmlcodec import fromXMLStr, _fromXMLRootNode
 from cobra.internal.rest.accessimpl import RestAccess
-
 
 class RefreshSubRequest(AbstractQuery):
 
